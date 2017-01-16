@@ -30,9 +30,10 @@ urllib.urlretrieve('http://math.univ-toulouse.fr/~besse/Wikistat/pdf/st-intro.pd
  "Statistique_introduction.pdf")
 
 # un fichier csv
-urllib.urlretrieve('https://opendata.paris.fr/explore/dataset/stations-velib-disponibilites-en-temps-reel/export/?dataChart=eyJxdWVyaWVzIjpbeyJjb25maWciOnsiZGF0YXNldCI6InN0YXRpb25zLXZlbGliLWRpc3BvbmliaWxpdGVzLWVuLXRlbXBzLXJlZWwiLCJvcHRpb25zIjp7fX0sImNoYXJ0cyI6W3sidHlwZSI6ImJhciIsImZ1bmMiOiJBVkciLCJ5QXhpcyI6Im51bWJlciIsInNjaWVudGlmaWNEaXNwbGF5Ijp0cnVlLCJjb2xvciI6IiM2NmMyYTUifV0sInhBeGlzIjoibGFzdF91cGRhdGUiLCJtYXhwb2ludHMiOiIiLCJ0aW1lc2NhbGUiOiJ5ZWFyIiwic29ydCI6IiJ9XX0%3D/stations-velib-disponibilites-en-temps-reel.csv',\
-'velib.csv')
+urllib.urlretrieve('https://opendata.paris.fr/explore/dataset/stations-velib-disponibilites-en-temps-reel/download/?format=csv&timezone=Europe/Berlin&use_labels_for_header=true',"velib.csv")
+
 
 # PROBLEME
 # un fichier csv (ou xls ou json) est telecharge, mais il ne correspond pas au fichier telecharge lorsque l'on 
 # clique sur le lien du site parisdata.fr
+# J'ai modifié le lien qui était utilisé dans le ficher CSV, de mon coté ca marche j'obtient bien le bon fichier

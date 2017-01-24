@@ -82,9 +82,9 @@ class Pw(QtGui.QWidget):
                     loc        = str(self.dvelib['records'][i]['fields']['address'])
                     velibdispo = self.dvelib['records'][i]['fields']['available_bikes']
                     info[loc]  = velibdispo
-            print info
+            print(info)
         except :
-            print u"Rentrez un numéro d'arrondissement"
+            print(u"Rentrez un numéro d'arrondissement")
     
     def velib_par_station(self):
         """ Connaitre le nombre de velos disponibles dans une station. Il suffit de connaitre
@@ -100,16 +100,25 @@ class Pw(QtGui.QWidget):
         N = len(self.dvelib['records'])
         for i in range(N):
             if station.upper() in self.dvelib['records'][i]['fields']['address']:
-                print self.dvelib['records'][i]['fields']['address'],\
-                'Velib disponibles :', self.dvelib['records'][i]['fields']['available_bikes']
+                print(self.dvelib['records'][i]['fields']['address'],\
+                'Velib disponibles :', self.dvelib['records'][i]['fields']['available_bikes'])
                 counter += 1
             elif i == N-1 and counter == 0 : 
-                print u'Aucune station trouvée à ce nom'
+                print(u'Aucune station trouvée à ce nom')
             else :
                 counter = counter
 
+# creer une application Qt si elle n'existe pas encore (pour que le code puisse etre executé avec "python draft_GUI.py")
+APP = QtGui.QApplication.instance()
+if APP is None:
+	APP = QtGui.QApplication(["parisdata"])		
+
 test = Pw()
 test.show()
+
+if __name__=="__main__":
+	APP.exec_() # Si le code est executé en mode standalone, la boucle d'application doit être lancée pour que le code ne
+				# retourne pas immédiatement sans rien faire...
 
 
 # Le code marche, mais il y a un petit beug au niveau de la fonction velib par station, il faut cliquer

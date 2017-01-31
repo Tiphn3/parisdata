@@ -10,6 +10,8 @@ import numpy as np
 from PyQt4 import QtGui,QtCore
 import requests
 import json
+import folium
+import webbrowser 
 
 #app = pg.mkQApp()
 

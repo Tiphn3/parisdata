@@ -2,45 +2,37 @@
 from __future__ import division
 """
 Created on Sun Jan 22 17:20:39 2017
-
 @author: Tiphaine
 """
 
-from PyQt4 import QtGui,QtCore
 import pyqtgraph as pg
-
-import requests
 import numpy as np
-#import json
+from PyQt4 import QtGui,QtCore
+import requests
+import json
 
-APP = QtGui.QApplication.instance()
-
-if APP == None:
-    APP = QtGui.QApplication(["parisdata"])
-
+#app = pg.mkQApp()
 
 class Pw(QtGui.QWidget):
     def __init__(self):
         QtGui.QWidget.__init__(self, parent=None)
-        self.resize(800,600)
+        self.resize(900,800)
         self.setWindowTitle("Graphe dans un widget")
         
-        self.layout = QtGui.QGridLayout()   
+        self.layout = QtGui.QGridLayout()
         self.setLayout(self.layout)
         
         self.plot = pg.PlotWidget(title=u"Données aléatoires")
         self.layout.addWidget(self.plot,0,1)
         
         # Donnees Velib ParisData
-            # url : "https://opendata.paris.fr/api/records/1.0/search?dataset=
-            # stations-velib-disponibilites-en-temps-reel"
-        self.r = requests.get("https://opendata.paris.fr/api/records/1.0/search?dataset=stations-velib-disponibilites-en-temps-reel")
+        self.r = requests.get("http://opendata.paris.fr//api/records/1.0/search?dataset=stations-velib-disponibilites-en-temps-reel")
         self.dvelib = self.r.json()
 
         
         # First button
         self.button = QtGui.QPushButton(u"Nouvelle prise de données",self)
-        self.button.clicked.connect(self.plot_graph)
+        self.button.clicked.connect(self.plotGraph)
         self.layout.addWidget(self.button,0,0)
         
         # Line Edit for method Velib_arrondissement
@@ -62,24 +54,28 @@ class Pw(QtGui.QWidget):
         
         # Third button - Find a velib with a station name
         self.button3 = QtGui.QPushButton('Chercher la station',self)
-        self.button3.clicked.connect(self.velib_par_station)
+        self.connect(self.button3, QtCore.SIGNAL("clicked()"), self.velib_par_station)
         self.layout.addWidget(self.button3)
+        
+        # Fourth button - Indicates the position of the trees on a map
+        self.button4 = QtGui.QPushButton('Position des arbres remarquables',self)
+        self.button4.clicked.connect(self.arbre_remarquable)
+        self.layout.addWidget(self.button4)
     
     # Methods     
-    def plot_graph(self):
+    def plotGraph(self):
         self.plot.clear()
         self.data = np.random.normal(loc=0.0,scale=2,size=100)
         self.plot.plot(self.data)
         
     def velib_arrondissement(self):
-        """ revoie un dictionnaire dont les cles sont les adresses des stations
-        de velib et les valeurs sont le nombre de velib disponibles
+        """ revoie un dictionnaire dont les cles sont les adresses des stations de velib
+        et les valeurs sont le nombre de velib disponibles
         
-        entree: le jeu de donnees a considerer et le numero de l'arrondissement
-                 d'interet
-        sortie: le dictionnaire
+        entree : le jeu de donnees a considerer et le numero de l'arrondissement d'interet
+        sortie : le dictionnaire
         """
-        try:
+        try :
             numero = self.l1.text()
             arrondissement = str(numero)
             N = len(self.dvelib['records'])
@@ -90,18 +86,17 @@ class Pw(QtGui.QWidget):
                     loc        = str(self.dvelib['records'][i]['fields']['address'])
                     velibdispo = self.dvelib['records'][i]['fields']['available_bikes']
                     info[loc]  = velibdispo
-            print (info)
-        except:
-            print (u"Rentrez un numéro d'arrondissement")
+            print(info)
+        except :
+            print(u"Rentrez un numéro d'arrondissement")
     
     def velib_par_station(self):
-        """ Connaitre le nombre de velos disponibles dans une station. Il 
-        suffit de connaitre en partie l'adresse de cette station. Par exemple 
-        pour la station se trouvant 52 rue Raffet 75016 Paris, il suffit de se 
-        rappeler 'Raffet'
+        """ Connaitre le nombre de velos disponibles dans une station. Il suffit de connaitre
+        en partie l'adresse de cette station. Par exemple pour la station se trouvant 52 rue Raffet
+        75016 Paris, il suffit de se rappeler 'Raffet'
         
-        entree: le jeu de donnees a considerer et le nombre de la station
-        sortie: l'adresse de la station et le nombre de velos disponibles
+        entree : le jeu de donnees a considerer et le nombre de la station
+        sortie : l'adresse de la station et le nombre de velos disponibles
         """
         station = self.l2.text()
         station = str(station)
@@ -109,23 +104,47 @@ class Pw(QtGui.QWidget):
         N = len(self.dvelib['records'])
         for i in range(N):
             if station.upper() in self.dvelib['records'][i]['fields']['address']:
-                print (self.dvelib['records'][i]['fields']['address'],'Velib disponibles :',\
-                       self.dvelib['records'][i]['fields']['available_bikes'])
+                print(self.dvelib['records'][i]['fields']['address'],\
+                'Velib disponibles :', self.dvelib['records'][i]['fields']['available_bikes'])
                 counter += 1
             elif i == N-1 and counter == 0 : 
-                print (u'Aucune station trouvée à ce nom')
+                print(u'Aucune station trouvée à ce nom')
             else :
                 counter = counter
+                
+    def arbre_remarquable(self):
+        """ Ouvre une carte qui localise les arbres remarquables dans Paris"""
+        map_osm = folium.Map(location=[48.85, 2.34])
+        r = requests.get("http://opendata.paris.fr//api/records/1.0/search?dataset=arbresremarquablesparis2011&rows=10")
+        data = r.json()
+
+        for i in xrange(10):
+            x,y = data['records'][i]['fields']['geom_x_y']
+            map_osm.simple_marker(location=[x, y], popup='3290005')
+    
+        map_osm.create_map(path='macarte.html')
+
+        webbrowser.open('file:///home/ak/fac/Projet%20python/macarte.html')
+
+                
+    
+
+# creer une application Qt si elle n'existe pas encore (pour que le code puisse etre executé avec "python draft_GUI.py")
+APP = QtGui.QApplication.instance()
+if APP is None:
+	APP = QtGui.QApplication(["parisdata"])		
 
 test = Pw()
 test.show()
 
-if __name__=="main":
-    APP.exec_()
-# Si le code est executé en mode standalone, la boucle d'application doit être lancée 
-#pour que le code ne retourne pas immédiatement sans rien faire...
-
+if __name__=="__main__":
+	APP.exec_() 
+ # Si le code est executé en mode standalone, la boucle d'application doit être lancée pour que le code ne
+# retourne pas immédiatement sans rien faire...
 
 
 # Le code marche, mais il y a un petit beug au niveau de la fonction velib par station, il faut cliquer
 # deux fois sur le bouton pour afficher le resultat de la recherche
+
+
+#Arbres remarquables : Je n'arrive a récolter sur le site paris data plus de 10 arbres !

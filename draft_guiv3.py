@@ -12,6 +12,8 @@ import numpy as np
 
 import requests
 from key import key # Pb: sans ma cle on ne peut pas faire tourner le code
+from builtins import str
+# for python 3 compatibility (see http://python-future.org/compatible_idioms.html#unicode)
 import json
 import webbrowser
 
@@ -55,7 +57,7 @@ class Pw(QtGui.QWidget):
         
         # Menu deroulant _  Velib par arrondissement
         self.cb1 = QtGui.QComboBox()
-        self.cb1.addItems([unicode(str(i+1)) for i in range(20)])
+        self.cb1.addItems([str(i+1) for i in range(20)])
         self.cb1.currentIndexChanged.connect(self.velib_arrondissement)
         self.layout.addWidget(self.cb1)
         
@@ -99,8 +101,8 @@ class Pw(QtGui.QWidget):
                     velibdispo = self.dvelib['records'][i]['fields']['available_bikes']
                     info[loc]  = velibdispo
 #            print (info)
-            self.cb3.addItems([unicode(velibdispo)])
-            self.cb2.addItems([unicode(loc)])
+            self.cb3.addItems([str(velibdispo)])
+            self.cb2.addItems([str(loc)])
             self.cb2.currentIndexChanged.connect(self.googlemap)
 #            self.cb2.addItems([unicode(items) for items in info.items()])
 #            self.cb2.currentIndexChanged.connect(self.googlemap)
@@ -118,12 +120,14 @@ class Pw(QtGui.QWidget):
         query = self.cb2.currentText()
         search_payload = {'key': key, 'query': query}
         search_req = requests.get(self.search_url, params=search_payload )
+        self.search_req = search_req
         search_json = search_req.json()
+        self.search_json = search_json
         
         place_id = search_json["results"][0]["place_id"]
         
         details_payload = {"key": key, "placeid": place_id}
-        details_resp = requests.get(self.details_url, params= details_payload)
+        details_resp = requests.get(self.details_url, params=details_payload)
         details_json = details_resp.json()
     
         url = details_json["result"]["url"]

@@ -14,7 +14,7 @@ import json
 
 import requests
 from key import key # Pb: sans ma cle on ne peut pas faire tourner le code
-
+from builtins import str
 
 APP = QtGui.QApplication.instance()
 
@@ -77,7 +77,7 @@ class SeeParisGui(QtGui.QWidget):
         
         # Menu deroulant _  Velib par arrondissement
         self.cb1 = QtGui.QComboBox()
-        self.cb1.addItems([unicode(str(i+1)) for i in range(20)])
+        self.cb1.addItems([str(str(i+1)) for i in range(20)])
         self.cb1.setFixedWidth(300)
         self.cb1.currentIndexChanged.connect(self.velib_arrondissement)
         self.layout.addWidget(self.cb1,2,0)
@@ -183,9 +183,9 @@ class SeeParisGui(QtGui.QWidget):
                      velibdispo = self.dvelib['records'][i]['fields']['available_bikes']
                      info[loc]  = velibdispo
                      self.cb3.blockSignals(True)
-                     self.cb3.addItem(unicode(velibdispo))
+                     self.cb3.addItem(str(velibdispo))
                      self.cb3.blockSignals(False)
-                     self.cb2.addItem(unicode(loc))
+                     self.cb2.addItem(str(loc))
 #            print (info)
           except:
              print (u"Pas de station répertoriées dans cet arrondissement")

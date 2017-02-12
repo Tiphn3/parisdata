@@ -9,11 +9,9 @@ Created on Tue Feb 07 10:29:50 2017
 from PyQt4 import QtGui,QtCore,QtWebKit
 import pyqtgraph as pg
 import numpy as np
-import json
-#import webbrowser
 
 import requests
-from key import key # Pb: sans ma cle on ne peut pas faire tourner le code
+from key import key # Pb: sans la cle on ne peut pas faire tourner le code
 
 
 APP = QtGui.QApplication.instance()
@@ -22,13 +20,12 @@ if APP == None:
     APP = QtGui.QApplication(["parisdata"])
     
 
-############################### Version 2 #####################################
+############################### Version 3 #####################################
 # 1) Google Maps s'ouvre dans un widget de l'interface graphique
 # 2) les donnees velib telechargees contiennent un nombre ajustable de lignes 
 # (contre 10 par defaut)
 # 4) Plusieurs boutons : arbres remarquables, cinemas, musee
-# 5) Prochaine etape : rajouter un histogramme du nombre moyen de velib 
-# disponibles dans un arrondissement.
+# 5) histogramme du nombre moyen de velib disponibles par arrondissement.
 ###############################################################################
 
 
@@ -59,7 +56,7 @@ class SeeParisGui(QtGui.QWidget):
         
         # Donnees Velib ParisData (500 lignes, environ 3 min)
             # url : "https://opendata.paris.fr/api/records/1.0/search?dataset=
-            # stations-velib-disponibilites-en-temps-reel"
+            # stations-velib-disponibilites-en-temps-reel&rows=500&sort=last_update"
         self.r = requests.get("https://opendata.paris.fr/api/records/1.0/search?dataset=stations-velib-disponibilites-en-temps-reel&rows=500&sort=last_update")
         self.dvelib = self.r.json()
         
@@ -94,29 +91,29 @@ class SeeParisGui(QtGui.QWidget):
         self.layout.addWidget(self.cb2,4,0)
         self.cb2.currentIndexChanged.connect(self.googlemap)
         
-        # Menu deroulant du nombre de velibs disponibles
-        self.cb3 = QtGui.QComboBox()
-        self.cb3.setFixedWidth(300)
-        self.layout.addWidget(self.cb3,5,0)
+#        # Menu deroulant du nombre de velibs disponibles
+#        self.cb3 = QtGui.QComboBox()
+#        self.cb3.setFixedWidth(300)
+#        self.layout.addWidget(self.cb3,5,0)
         ################
         
         # Arbres remarquables de Paris : bouton a cliquer pour voir
         self.button2 = QtGui.QPushButton(u'Arbres remarquables à Paris')
         self.button2.setFixedWidth(300)
-        self.layout.addWidget(self.button2,6,0)
+        self.layout.addWidget(self.button2,5,0)
         self.button2.clicked.connect(self.arbres_remarquables)
         
         # Salles de cinema : bouton
         self.cinebutton = QtGui.QPushButton(u"Salles de cinéma")
         self.cinebutton.setFixedWidth(300)
-        self.layout.addWidget(self.cinebutton,7,0)
+        self.layout.addWidget(self.cinebutton,6,0)
         self.cinebutton.clicked.connect(self.salles_de_cinema)
         
         # Musees : bouton
         self.museebutton = QtGui.QPushButton(u"Musées")
         self.museebutton.setFixedWidth(300)
         self.layout.addWidget(self.museebutton)
-        self.museebutton.clicked.connect(self.musees,8,0)
+        self.museebutton.clicked.connect(self.musees,7,0)
         
         
         # LineEdit recherche d'adresse sur Google Maps
@@ -124,13 +121,13 @@ class SeeParisGui(QtGui.QWidget):
         self.l1.setObjectName("adresse d'une station")
         self.l1.setFixedWidth(300)
         self.l1.setText(u"Rentrez une adresse")
-        self.layout.addWidget(self.l1,9,0)
+        self.layout.addWidget(self.l1,8,0)
         
         # bouton -Lancer la recherche google map
         self.button3 = QtGui.QPushButton('Chercher', self)
         self.button3.setFixedWidth(150)
         self.button3.clicked.connect(self.googlemap)
-        self.layout.addWidget(self.button3,9,1)
+        self.layout.addWidget(self.button3,8,1)
         
         # Histogramme bouton
         self.button4 = QtGui.QPushButton(u"Afficher l'histogramme")
@@ -204,7 +201,7 @@ class SeeParisGui(QtGui.QWidget):
              N = len(self.dvelib['records'])
              info = dict()
              self.cb2.clear()
-             self.cb3.clear()
+#             self.cb3.clear()
              # Construction du dictionnaire
              for i in range(N):
 #                loc = [str(record['fields']['address']) for record in self.dvelib['records']]
@@ -213,10 +210,12 @@ class SeeParisGui(QtGui.QWidget):
                      loc        = str(self.dvelib['records'][i]['fields']['address'])                    
                      velibdispo = self.dvelib['records'][i]['fields']['available_bikes']
                      info[loc]  = velibdispo
-                     self.cb3.blockSignals(True)
-                     self.cb3.addItem(unicode(velibdispo))
-                     self.cb3.blockSignals(False)
                      self.cb2.addItem(unicode(loc))
+#                     self.cb3.blockSignals(True)
+#                     self.cb3.addItem(unicode(velibdispo))
+#                     self.cb3.blockSignals(False)
+#                     self.cb2.addItem(unicode(loc))
+#                     self.cb2.blockSignals(False)
 #            print (info)
           except:
              print (u"Pas de station répertoriées dans cet arrondissement")

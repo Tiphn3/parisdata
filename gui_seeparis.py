@@ -14,7 +14,7 @@ import json
 
 import requests
 from key import key # Pb: sans ma cle on ne peut pas faire tourner le code
-from builtins import str
+
 
 APP = QtGui.QApplication.instance()
 
@@ -57,10 +57,10 @@ class SeeParisGui(QtGui.QWidget):
         
         ############################
         
-        # Donnees Velib ParisData (100 lignes)
+        # Donnees Velib ParisData (500 lignes, environ 3 min)
             # url : "https://opendata.paris.fr/api/records/1.0/search?dataset=
             # stations-velib-disponibilites-en-temps-reel"
-        self.r = requests.get("https://opendata.paris.fr/api/records/1.0/search?dataset=stations-velib-disponibilites-en-temps-reel&rows=1234&sort=last_update")
+        self.r = requests.get("https://opendata.paris.fr/api/records/1.0/search?dataset=stations-velib-disponibilites-en-temps-reel&rows=500&sort=last_update")
         self.dvelib = self.r.json()
         
         # Bouton Carte des velibs dans Paris
@@ -77,7 +77,7 @@ class SeeParisGui(QtGui.QWidget):
         
         # Menu deroulant _  Velib par arrondissement
         self.cb1 = QtGui.QComboBox()
-        self.cb1.addItems([str(str(i+1)) for i in range(20)])
+        self.cb1.addItems([unicode(str(i+1)) for i in range(20)])
         self.cb1.setFixedWidth(300)
         self.cb1.currentIndexChanged.connect(self.velib_arrondissement)
         self.layout.addWidget(self.cb1,2,0)
@@ -135,7 +135,8 @@ class SeeParisGui(QtGui.QWidget):
         # Histogramme bouton
         self.button4 = QtGui.QPushButton(u"Afficher l'histogramme")
         self.button4.setFixedWidth(300)
-        self.button4.clicked.connect(self.plot_graph)
+#        self.button4.clicked.connect(self.plot_graph)
+        self.button4.clicked.connect(self.histograph)
         self.layout.addWidget(self.button4,1,2)        
         
         # url issus du site Google developers
@@ -150,7 +151,37 @@ class SeeParisGui(QtGui.QWidget):
         self.plotwidget.clear()
         self.data = np.random.normal(loc=0.0,scale=2,size=100)
         self.plotwidget.plot(self.data)
-    
+        
+    def histograph(self):
+        """ Trace le nombre de velibs disponibles en 'temps reel' a partir des
+        donnees parisdata
+        """
+        # Recuperation des donnees
+        try :
+            arrdt_liste = []
+            velibmoyen_liste = []
+            velibstd_liste = []
+        
+            for i in range(1,21):
+                velibdispo = []
+                arrdt = str(i)
+                N = len(self.dvelib['records'])
+            
+                for j in range(N):
+                     if int(str(self.dvelib['records'][j]['fields']['name'][:2])) == int(arrdt):
+                         velibdispo.append(self.dvelib['records'][j]['fields']['available_bikes'])
+                
+                velibmoyen_liste.append(np.mean(velibdispo))
+                velibstd_liste.append(np.std(velibdispo))
+                arrdt_liste.append(i)
+        except :
+            print u'pas de données'
+        
+        # Plot
+        self.plotwidget.clear()
+        histoplot = pg.BarGraphItem(x=arrdt_liste, height=velibmoyen_liste,width=0.3, brush='b')
+        self.plotwidget.addItem(histoplot)
+
     def velib_carte(self):
           """ Renvoie dans un widget la carte des velibs dans Paris
           """
@@ -178,14 +209,14 @@ class SeeParisGui(QtGui.QWidget):
              for i in range(N):
 #                loc = [str(record['fields']['address']) for record in self.dvelib['records']]
 #                velibdispo = [record['fields']['available_bikes'] for record in self.dvelib['records']]
-                 if int(str(self.dvelib['records'][i]['fields']['name'][:2])) == int(arrdt) :
+                 if int(str(self.dvelib['records'][i]['fields']['name'][:2])) == int(arrdt):
                      loc        = str(self.dvelib['records'][i]['fields']['address'])                    
                      velibdispo = self.dvelib['records'][i]['fields']['available_bikes']
                      info[loc]  = velibdispo
                      self.cb3.blockSignals(True)
-                     self.cb3.addItem(str(velibdispo))
+                     self.cb3.addItem(unicode(velibdispo))
                      self.cb3.blockSignals(False)
-                     self.cb2.addItem(str(loc))
+                     self.cb2.addItem(unicode(loc))
 #            print (info)
           except:
              print (u"Pas de station répertoriées dans cet arrondissement")

@@ -57,7 +57,7 @@ class SeeParisGui(QtGui.QWidget):
         self.layout.addWidget(self.plotwidget,0,2)
         
         # Plot Widget 2
-        self.plotwidget2 = pg.PlotWidget(title=u"Données journalières (11/02/2017)")
+        self.plotwidget2 = pg.PlotWidget(title=u"Données journalières (11/02/2017 - 12/02/2017)")
         self.layout.addWidget(self.plotwidget2,2,2)
         
         ############################
@@ -164,9 +164,9 @@ class SeeParisGui(QtGui.QWidget):
         ############################ Methods ################################
     def plot_graph(self):
         self.plotwidget2.clear()
-        x0,y0 = self.superhisto()
+        x0,y0,z0 = self.superhisto()
         x0 = [(x0[i]-x0[0])/3600 for i in range(len(x0))]
-        self.data = pg.BarGraphItem(x=x0,height =y0,width=0.01)
+        self.data = pg.BarGraphItem(x=x0,height =y0,width=0.3)
         self.plotwidget2.addItem(self.data)
         self.plotwidget2.getAxis('bottom').setLabel('Temps (H)')
         self.plotwidget2.getAxis('left').setLabel('Moyenne des velibs disponibles')
@@ -191,7 +191,8 @@ class SeeParisGui(QtGui.QWidget):
             chemin_f = "C:/Users/Tiphaine/Documents/COURS/PHYSIQUE/M2_LuMI/S2/Projet_informatique/Day_data/datta"
 
             k=1
-            Velo = []
+            mvelo = []
+            stdvelo = []
             Tps = []
 
             while True :
@@ -201,6 +202,7 @@ class SeeParisGui(QtGui.QWidget):
                         Lecture_fichier = data.read()
                         dico = dict(eval(Lecture_fichier))
                         N = len(dico["records"])
+                        velo = []
                             
                         for i in range(N):
                                 if int(str(dico['records'][i]['fields']['name'][:2])) == int(arr):
@@ -211,13 +213,14 @@ class SeeParisGui(QtGui.QWidget):
                                     #prendre l'heure et minute d'acquisition du fichier
                                     #(renvoie a sa dete de creation)
                                     a = os.stat(chemin_f+str(k))[8]
-                                    
-                                    Tps.append(a)
-                                    Velo.append(nb_velo)
+                                    velo.append(nb_velo)
                                     k+=1
+                        Tps.append(a)
+                        mvelo.append(np.mean(velo))
+                        stdvelo.append(np.std(velo))
                 except:
                          break
-            return Tps,Velo
+            return Tps,mvelo,stdvelo
         else:
             raise ValueError("""rentrez un numéro d'arrondissement valable""")
         
@@ -250,6 +253,8 @@ class SeeParisGui(QtGui.QWidget):
         self.plotwidget.clear()
         histoplot = pg.BarGraphItem(x=arrdt_liste, height=velibmoyen_liste,width=0.3, brush='b')
         self.plotwidget.addItem(histoplot)
+        self.plotwidget.getAxis('bottom').setLabel(u"Numéro d'arrondissement")
+        self.plotwidget.getAxis('left').setLabel(u"Nombre moyen de velibs disponibles")
 
     def velib_carte(self):
           """ Renvoie dans un widget la carte des velibs dans Paris
@@ -298,7 +303,6 @@ class SeeParisGui(QtGui.QWidget):
         sortie: l'url google map de cette adresse et ouverture d'une page internet
         """
         query = self.cb2.currentText()
-#            query = str(self.l1.text())
     
         search_payload = {'key': key, 'query': query}
         search_req = requests.get(self.search_url, params=search_payload )
